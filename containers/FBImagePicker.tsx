@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, Image, View } from 'react-native';
+import { Alert, Button, Image, View, Text, TouchableOpacity } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import Constants from 'expo-constants';
 import * as Permissions from 'expo-permissions';
@@ -7,11 +7,29 @@ import * as MediaLibrary from 'expo-media-library';
 
 interface State {
   image: MediaLibrary.AssetInfo | null;
+  location: any;
 }
 
 export class FBImagePicker extends React.Component {
   state: State = {
     image: null,
+    location: null,
+  };
+
+  findCoordinates = () => {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const location = JSON.stringify(position);
+
+        this.setState({ location });
+      },
+      error => Alert.alert(error.message),
+      {
+        enableHighAccuracy: true,
+        maximumAge: 1000,
+        timeout: 20000,
+      },
+    );
   };
 
   componentDidMount() {
@@ -20,7 +38,7 @@ export class FBImagePicker extends React.Component {
 
   getPermissionAsync = async () => {
     if (Constants.platform.ios) {
-      const { status } = await Permissions.askAsync(Permissions.CAMERA, Permissions.CAMERA_ROLL);
+      const { status } = await Permissions.askAsync(Permissions.CAMERA, Permissions.CAMERA_ROLL, Permissions.LOCATION);
 
       if (status !== 'granted') {
         alert('Sorry, we need camera permissions to make this work!');
@@ -37,6 +55,10 @@ export class FBImagePicker extends React.Component {
   };
 
   takePhoto = async () => {
+    console.log("guard")
+    console.log(navigator.geolocation.getCurrentPosition)
+    console.log("guard")
+
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: false,
@@ -60,8 +82,15 @@ export class FBImagePicker extends React.Component {
 
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Text style={{fontWeight: 'bold', fontSize: 50, color: "red"}}>
+          FraudBusters
+        </Text>
         {image && <Image source={{ uri: image.uri }} style={{ width: 200, height: 200 }} />}
-        {!image && <Button title="Take photo" onPress={this.takePhoto} />}
+        {!image && <Button color="red" title="Take photo" onPress={this.takePhoto} />}
+        <TouchableOpacity onPress={this.findCoordinates}>
+          <Text>Find My Coords?</Text>
+          <Text>Location: {this.state.location}</Text>
+        </TouchableOpacity>
       </View>
     );
   }
