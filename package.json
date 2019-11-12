@@ -13,6 +13,7 @@
     "expo-asset": "~7.0.0",
     "expo-image-picker": "~7.0.0",
     "expo-media-library": "~7.0.0",
+    "expo-network": "~1.0.0",
     "mem": "^4.0.0",
     "react": "16.8.3",
     "react-dom": "16.8.3",

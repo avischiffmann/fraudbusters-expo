@@ -1,9 +1,10 @@
+import Constants from 'expo-constants';
+import * as ImagePicker from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library';
+import * as Network from 'expo-network';
+import * as Permissions from 'expo-permissions';
 import * as React from 'react';
 import { Alert, Button, Image, View, Text, TouchableOpacity } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import Constants from 'expo-constants';
-import * as Permissions from 'expo-permissions';
-import * as MediaLibrary from 'expo-media-library';
 
 interface State {
   image: MediaLibrary.AssetInfo | null;
@@ -58,6 +59,19 @@ export class FBImagePicker extends React.Component {
     console.log("guard")
     console.log(navigator.geolocation.getCurrentPosition)
     console.log("guard")
+
+    Network.getNetworkStateAsync()
+      .then(networkState => {
+        if (networkState.isInternetReachable) {
+          console.log("User is connected to internet");
+          // do something like going to the camera now
+        } else {
+          console.log("User is not connected to internet");
+        }
+      })
+      .catch(err => {
+        // do something with the error here
+      });
 
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
