@@ -89,25 +89,13 @@ export class Login extends React.Component<Props, State> {
   render() {
     return (
       <View style={styles.container}>
-        <Text
-          style={{
-            ...styles.title,
-            color: 'rgb(0, 108, 255)',
-          }}
-        >
-          Fraud
-        </Text>
-        <Text
-          style={{
-            ...styles.title,
-            color: 'rgb(255, 59, 48)',
-          }}
-        >
-          Busters
-        </Text>
-        <Image
-          source={require('../assets/fraudbusters_logo.png')}
+       <Image
+          source={require('../assets/evidenceimage.png')}
           style={styles.image}
+        />
+       <Image
+          source={require('../assets/ESafe.png')}
+          style={styles.imageTitle}
         />
         <TextInput
           value={this.state.email}
@@ -126,19 +114,19 @@ export class Login extends React.Component<Props, State> {
           onPress={this.onLogin.bind(this)}
           style={{
             ...styles.button,
-            backgroundColor: 'rgb(0, 108, 255)',
+            backgroundColor: 'rgb(254, 213, 33)',
           }}
         >
-          <Text>Login</Text>
+          <Text style={{...styles.buttonTextBlack}}>Login</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => this.props.navigation.navigate('Camera')}
           style={{
             ...styles.button,
-            backgroundColor: 'rgb(255, 59, 48)',
+            backgroundColor: 'rgb(0, 0, 0)',
           }}
         >
-          <Text>Take Photo Offline</Text>
+          <Text style={{...styles.buttonTextYellow}}>Take Photo Offline</Text>
         </TouchableOpacity>
       </View>
     );
@@ -152,32 +140,47 @@ const styles = StyleSheet.create({
     elevation: 3,
     height: 44,
     margin: 10,
-    paddingVertical: 10,
-    width: 200,
+    paddingTop: 13,
+    width: 300,
   },
   container: {
     alignItems: 'center',
     backgroundColor: '#ecf0f1',
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: 50,
+  },
+  buttonTextBlack: {
+    color: 'rgb(0, 0, 0)',
+    fontWeight: 'bold',
+    textAlignHorizontal: 'center',
+    textAlignVertical: 'center',
+
+  },
+  buttonTextYellow: {
+    color: 'rgb(254, 213, 33)',
+    fontWeight: 'bold',
+    textAlignHorizontal: 'center',
+    textAlignVertical: 'bottom',
   },
   image: {
-    height: 200,
-    marginBottom: 10,
-    width: 200,
+    height: 125.75,
+    marginBottom: 5,
+    width: 83.625,
+  },
+  imageTitle : {
+    height: 91.75,
+    marginVertical: 0,
+    width: 203.25,
   },
   input: {
     borderColor: 'black',
     borderRadius: 6,
     borderWidth: 1,
-    height: 44,
-    marginBottom: 10,
-    padding: 10,
-    width: 200,
-  },
-  title: {
-    fontFamily: 'Ubuntu',
-    fontSize: 40,
     fontWeight: 'bold',
+    height: 44,
+    marginBottom: 20,
+    padding: 10,
+    width: 300,
   },
 });
