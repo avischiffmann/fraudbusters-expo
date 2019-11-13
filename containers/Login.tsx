@@ -1,21 +1,89 @@
 import * as React from 'react';
 import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { NavigationStackScreenProps } from 'react-navigation-stack';
+import { NavigationStackProp } from 'react-navigation-stack';
 
 interface Props {
-  navigation: NavigationStackScreenProps;
+  navigation: NavigationStackProp;
 }
 
-export class Login extends React.Component<Props> {
-  state = {
-    username: '',
+interface State {
+  'access-token': string;
+  client: string;
+  email: string;
+  expiry: number;
+  password: string;
+  'token-type': string;
+  uid: string;
+}
+
+interface ExtendedHeaders extends Headers {
+  client: string;
+  expiry: number;
+  uid: string;
+}
+
+interface ExtendedResponse extends Response {
+  headers: ExtendedHeaders;
+}
+
+export class Login extends React.Component<Props, State> {
+  state: State = {
+    'access-token': '',
+    client: '',
+    email: '',
+    expiry: 0,
     password: '',
+    'token-type': '',
+    uid: '',
   };
 
-  onLogin() {
-    const { username, password } = this.state;
+  async onLogin() {
+    const { email, password } = this.state;
 
-    Alert.alert('Credentials', `${username} + ${password}`);
+    await fetch(`http://dev.cadabra.me:3000/api/v1/auth/sign_in?email=${email}&password=${password}`, {
+      headers: {
+        accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+    })
+      .then((response: ExtendedResponse) => {
+        this.setState({
+          'access-token': response.headers['access-token'],
+          client: response.headers.client,
+          email,
+          expiry: response.headers.expiry,
+          password: '',
+          'token-type': response.headers['token-type'],
+          uid: response.headers.uid,
+        });
+
+        return response.json()
+          .then(json => {
+            if (response.ok) {
+              return json;
+            } else {
+              return Promise.reject(Object.assign({}, json, {
+                status: response.status,
+                statusText: response.statusText,
+              }));
+            }
+          });
+      })
+      .then((response: any) => {
+        if (!response) {
+          return Promise.reject({
+            error: 'Failed to log in to app',
+            status: response.errcode,
+            statusText: response.message,
+          });
+        }
+      })
+      .catch((err: any) => {
+        const errorMessage = `${err.error}\nError #${err.status}: ${err.statusText}`;
+        Alert.alert(errorMessage);
+        console.log(err);
+      });
   }
 
   render() {
@@ -42,14 +110,14 @@ export class Login extends React.Component<Props> {
           style={styles.image}
         />
         <TextInput
-          value={this.state.username}
-          onChangeText={(username) => this.setState({ username })}
-          placeholder={'Username'}
+          value={this.state.email}
+          onChangeText={email => this.setState({ email })}
+          placeholder={'Email'}
           style={styles.input}
         />
         <TextInput
           value={this.state.password}
-          onChangeText={(password) => this.setState({ password })}
+          onChangeText={password => this.setState({ password })}
           placeholder={'Password'}
           secureTextEntry={true}
           style={styles.input}
@@ -64,7 +132,7 @@ export class Login extends React.Component<Props> {
           <Text>Login</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => Alert.alert('Button clicked!')}
+          onPress={() => this.props.navigation.navigate('Camera')}
           style={{
             ...styles.button,
             backgroundColor: 'rgb(255, 59, 48)',
