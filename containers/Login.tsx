@@ -1,5 +1,6 @@
+import * as Network from 'expo-network';
 import * as React from 'react';
-import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { NavigationStackProp } from 'react-navigation-stack';
 
 interface Props {
@@ -10,16 +11,22 @@ interface State {
   'access-token': string;
   client: string;
   email: string;
+  errorMessage: string;
   expiry: number;
+  hasNetworkConnection: boolean;
   password: string;
   'token-type': string;
   uid: string;
 }
 
 interface ExtendedHeaders extends Headers {
-  client: string;
-  expiry: number;
-  uid: string;
+  map: {
+    'access-token': string;
+    client: string;
+    expiry: number;
+    'token-type': string;
+    uid: string;
+  };
 }
 
 interface ExtendedResponse extends Response {
@@ -31,31 +38,51 @@ export class Login extends React.Component<Props, State> {
     'access-token': '',
     client: '',
     email: '',
+    errorMessage: '',
     expiry: 0,
+    hasNetworkConnection: false,
     password: '',
     'token-type': '',
     uid: '',
   };
 
+  async checkNetworkConnection() {
+    await Network.getNetworkStateAsync()
+      .then((networkState: Network.NetworkState) => {
+        if (networkState.isInternetReachable) {
+          this.setState({ hasNetworkConnection: true });
+        }
+
+        if (!networkState) {
+          throw new Error(`There was a problem obtaining the user's connection status.`);
+        }
+      })
+      .catch((err: Error) => {
+        console.error(err);
+      });
+  }
+
   async onLogin() {
     const { email, password } = this.state;
 
-    await fetch(`http://dev.cadabra.me:3000/api/v1/auth/sign_in?email=${email}&password=${password}`, {
-      headers: {
-        accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
+    await fetch(
+      `http://dev.cadabra.me:3000/api/v1/auth/sign_in?email=${email}&password=${password}`,
+      {
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
     })
       .then((response: ExtendedResponse) => {
         this.setState({
-          'access-token': response.headers['access-token'],
-          client: response.headers.client,
+          'access-token': response.headers.map['access-token'],
+          client: response.headers.map.client,
           email,
-          expiry: response.headers.expiry,
+          expiry: response.headers.map.expiry,
           password: '',
-          'token-type': response.headers['token-type'],
-          uid: response.headers.uid,
+          'token-type': response.headers.map['token-type'],
+          uid: response.headers.map.uid,
         });
 
         return response.json()
@@ -80,9 +107,11 @@ export class Login extends React.Component<Props, State> {
         }
       })
       .catch((err: any) => {
-        const errorMessage = `${err.error}\nError #${err.status}: ${err.statusText}`;
-        Alert.alert(errorMessage);
-        console.log(err);
+        const errorMessage = err.error
+          ? `${err.error}\nError #${err.status}: ${err.statusText}`
+          : err.errors[0];
+
+        this.setState({ errorMessage });
       });
   }
 
@@ -110,6 +139,11 @@ export class Login extends React.Component<Props, State> {
           secureTextEntry={true}
           style={styles.input}
         />
+        {
+          this.state.errorMessage !== ''
+            ? <Text style={styles.errorMessage}>{this.state.errorMessage}</Text>
+            : null
+        }
         <TouchableOpacity
           onPress={this.onLogin.bind(this)}
           style={{
@@ -119,15 +153,19 @@ export class Login extends React.Component<Props, State> {
         >
           <Text style={{...styles.buttonTextBlack}}>Login</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => this.props.navigation.navigate('Camera')}
-          style={{
-            ...styles.button,
-            backgroundColor: 'rgb(0, 0, 0)',
-          }}
-        >
-          <Text style={{...styles.buttonTextYellow}}>Take Photo Offline</Text>
-        </TouchableOpacity>
+        {
+          !this.state.hasNetworkConnection
+            ? <TouchableOpacity
+                onPress={() => this.props.navigation.navigate('Camera')}
+                style={{
+                  ...styles.button,
+                  backgroundColor: 'rgb(0, 0, 0)',
+                }}
+              >
+                <Text style={{...styles.buttonTextYellow}}>Take Photo Offline  </Text>
+              </TouchableOpacity>
+            : null
+        }
       </View>
     );
   }
@@ -162,6 +200,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlignHorizontal: 'center',
     textAlignVertical: 'bottom',
+  },
+  errorMessage: {
+    color: 'rgb(255, 59, 48)',
+    paddingBottom: 20,
+    paddingHorizontal: 40,
+    paddingTop: 10,
+    textAlign: 'center',
   },
   image: {
     height: 125.75,

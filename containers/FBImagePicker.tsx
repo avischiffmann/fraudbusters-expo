@@ -1,10 +1,9 @@
 import Constants from 'expo-constants';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
-import * as Network from 'expo-network';
 import * as Permissions from 'expo-permissions';
 import * as React from 'react';
-import { Alert, Button, Image, View, Text, TouchableOpacity } from 'react-native';
+import { Alert, Button, Image, Text, TouchableOpacity, View } from 'react-native';
 
 interface State {
   image: MediaLibrary.AssetInfo | null;
@@ -47,7 +46,7 @@ export class FBImagePicker extends React.Component {
     }
 
     if (Constants.platform.android) {
-      const { status } = await Permissions.askAsync(Permissions.CAMERA, Permissions.CAMERA_ROLL);
+      const { status } = await Permissions.askAsync(Permissions.CAMERA, Permissions.CAMERA_ROLL, Permissions.LOCATION);
 
       if (status !== 'granted') {
         alert('Sorry, we need camera permissions to make this work!');
@@ -59,19 +58,6 @@ export class FBImagePicker extends React.Component {
     console.log("guard")
     console.log(navigator.geolocation.getCurrentPosition)
     console.log("guard")
-
-    Network.getNetworkStateAsync()
-      .then(networkState => {
-        if (networkState.isInternetReachable) {
-          console.log("User is connected to internet");
-          // do something like going to the camera now
-        } else {
-          console.log("User is not connected to internet");
-        }
-      })
-      .catch(err => {
-        // do something with the error here
-      });
 
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
