@@ -3,17 +3,19 @@ import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import * as Permissions from 'expo-permissions';
 import * as React from 'react';
-import { Alert, Button, Image, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Button, Image, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 
 interface State {
   image: MediaLibrary.AssetInfo | null;
   location: any;
+  hasPhoto: boolean;
 }
 
 export class FBImagePicker extends React.Component {
   state: State = {
     image: null,
     location: null,
+    hasPhoto: false,
   };
 
   findCoordinates = () => {
@@ -81,17 +83,64 @@ export class FBImagePicker extends React.Component {
     let { image } = this.state;
 
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{fontWeight: 'bold', fontSize: 50, color: "red"}}>
-          FraudBusters
-        </Text>
-        {image && <Image source={{ uri: image.uri }} style={{ width: 200, height: 200 }} />}
-        {!image && <Button color="red" title="Take photo" onPress={this.takePhoto} />}
-        <TouchableOpacity onPress={this.findCoordinates}>
-          <Text>Find My Coords?</Text>
-          <Text>Location: {this.state.location}</Text>
+      <View style={styles.buttonPlacement}>
+      {
+          !this.state.hasPhoto
+            ?<Image source={require('../assets/camera.png')}
+          style={styles.cameraImage} /> 
+          :null 
+        }
+        {image && <Image source={{ uri: image.uri }} style={{ width: 430, height: 800 }} />}
+
+         <TouchableOpacity
+          style={{
+            ...styles.button,
+            backgroundColor: 'rgb(254, 213, 33)',
+          }}
+          onPress={this.takePhoto}
+        >
+          <Text style={{...styles.buttonTextBlack}}>Take Photo</Text>
         </TouchableOpacity>
       </View>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  button: {
+    alignItems: 'center',
+    borderRadius: 6,
+    elevation: 3,
+    height: 44,
+    margin: 10,
+    paddingTop: 13,
+    width: 350,
+    bottom: 0,
+  },
+  container: {
+    alignItems: 'center',
+    backgroundColor: '#ecf0f1',
+    flex: 1,
+    justifyContent: 'flex-start',
+    paddingTop: 50,
+  },
+  buttonTextBlack: {
+    color: 'rgb(0, 0, 0)',
+    fontWeight: 'bold',
+    textAlignHorizontal: 'center',
+    textAlignVertical: 'center',
+  },
+  buttonPlacement: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    marginBottom: 80,
+    alignItems: 'center',
+  },
+  cameraImage: {
+    height: 80.7142857143,
+    marginVertical: 300,
+    width: 101.25,
+    //justifyContent: "center",
+    paddingBottom : 50
+  }
+});
